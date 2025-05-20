@@ -77,5 +77,12 @@ public interface ICarboneServices {
      * @return give a precalculates templateId
      */
     String generateTemplateId(String path);
+
+    /**
+     * precalculates the template id
+     * @param fileBytes byte content of the template file
+     * @return give a precalculates templateId
+     */
+    String generateTemplateId(byte[] fileBytes);
     
 }

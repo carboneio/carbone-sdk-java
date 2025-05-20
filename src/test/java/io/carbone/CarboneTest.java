@@ -483,4 +483,16 @@ public class CarboneTest {
         String status = carboneService.getStatus();
         assertEquals(status.contains("\"success\":true,\"code\":200"), true);
     }
+
+    @Test
+    public void Test_Generate_Template_Id_From_Byte_Array() throws CarboneException, IOException
+    {
+        String filename = "/src/test/java/io/carbone/template3.odt";
+        Path filePath = Paths.get(directory, filename);
+        byte[] fileBytes = Files.readAllBytes(filePath);
+
+        String templateId = carboneServices.generateTemplateId(fileBytes);
+
+        assertEquals(templateId, "fb9241ea2218ffd8f974110e539386384620244618c2efbf182b7bd47242987a");
+    }
 }
