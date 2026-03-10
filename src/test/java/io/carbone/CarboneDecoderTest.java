@@ -1,8 +1,8 @@
 package io.carbone;
 
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,7 +23,7 @@ public class CarboneDecoderTest {
     private Request request;
     private CarboneDecoder carboneDecoder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         request = Request.create(Request.HttpMethod.GET, "url", emptyMap(), Request.Body.empty(), null);
 

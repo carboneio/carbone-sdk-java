@@ -87,3 +87,8 @@ Temporary Items
 .factorypath
 settings.xml
 .settings
+
+### Environment ###
+.env
+.env.local
+.env.*.local

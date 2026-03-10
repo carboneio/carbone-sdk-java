@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import feign.Response;
-import feign.Util;
 import feign.codec.ErrorDecoder;
 
 class CarboneErrorDecoder implements ErrorDecoder {
@@ -16,7 +15,7 @@ class CarboneErrorDecoder implements ErrorDecoder {
     public Exception decode(String methodKey, Response response) {
         CarboneException carboneException;
         try {
-            String result = Util.toString(response.body().asReader(StandardCharsets.UTF_8));
+            String result = new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);

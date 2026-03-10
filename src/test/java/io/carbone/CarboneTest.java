@@ -1,8 +1,8 @@
 package io.carbone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import feign.Request;
 import feign.Response;

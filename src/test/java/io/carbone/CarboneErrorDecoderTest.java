@@ -3,8 +3,8 @@ package io.carbone;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +17,7 @@ public class CarboneErrorDecoderTest {
     private CarboneErrorDecoder carboneErrorDecoder;
     private CarboneResponse carboneResponse;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         request = Request.create(Request.HttpMethod.GET, "url", emptyMap(), Request.Body.empty(), null);
 

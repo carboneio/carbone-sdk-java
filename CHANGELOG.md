@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.3 - 2026-03-10
+- Security: Updated dependencies to fix CVE-2022-42003 (jackson-databind), CVE-2022-45690/CVE-2023-5072 (org.json, removed), CVE-2023-24998 (feign-form), CVE-2026-24400 (assertj-core).
+- Updated all OpenFeign modules to `13.5`, Lombok to `1.18.38`, Mockito to `5.14.2`, JaCoCo to `0.8.13`, slf4j to `2.0.17`.
+- Build: switched to `maven.compiler.release=11`, added explicit Lombok annotation processor path.
+- Tests: migrated all tests from JUnit 4 to JUnit 5 (`junit-jupiter 5.12.1`).
+
+## 2.0.2
+- Build: fixed `central-publishing-maven-plugin` configuration (removed duplicate `serverId` entry).
+- CI: updated GitHub Actions publish workflow with correct environment variables and pipeline configuration.
+
 ## 2.0.1
 - Setup automatic deployment with Github Action.
 - Updated readme examples.
