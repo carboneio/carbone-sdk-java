@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   release:
     types: [created]
+permissions:
+  contents: read
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -14,17 +16,13 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           server-id: central
-          server-username: ${{ secrets.CENTRAL_USERNAME }} # env variable for username in deploy
-          server-password: ${{ secrets.CENTRAL_PASSWORD }} # env variable for token in deploy
+          server-username: MAVEN_USERNAME # name of the env variable holding the username
+          server-password: MAVEN_PASSWORD # name of the env variable holding the token
           gpg-private-key: ${{ secrets.SIGN_KEY }}
-          gpg-passphrase: ${{ secrets.SIGN_KEY_PASS }} # env variable for GPG private key passphrase
-      # - name: Set version
-      #   run: mvn versions:set -DnewVersion=${{ github.event.release.tag_name }}
+          gpg-passphrase: SIGN_KEY_PASS # name of the env variable holding the GPG passphrase
       - name: Publish package
-        run: mvn -X --batch-mode deploy -DskipTests
+        run: mvn --batch-mode deploy -DskipTests # tests must pass before tagging a release
         env:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
-          MAVEN_CENTRAL_TOKEN: ${{ secrets.CENTRAL_PASSWORD }}
-          SIGN_KEY: ${{ secrets.SIGN_KEY }}
           SIGN_KEY_PASS: ${{ secrets.SIGN_KEY_PASS }}
