@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.4
+- Security: Updated `assertj-core` to `3.27.7` to fix CVE-2026-24400 (High severity).
+
 ## 2.0.3 - 2026-03-10
 - Security: Updated dependencies to fix CVE-2022-42003 (jackson-databind), CVE-2022-45690/CVE-2023-5072 (org.json, removed), CVE-2023-24998 (feign-form), CVE-2026-24400 (assertj-core).
 - Updated all OpenFeign modules to `13.5`, Lombok to `1.18.38`, Mockito to `5.14.2`, JaCoCo to `0.8.13`, slf4j to `2.0.17`.

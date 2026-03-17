@@ -8,7 +8,7 @@ The Carbone Java SDK provides a simple interface to communicate with Carbone Clo
 <dependency>
     <groupId>io.carbone</groupId>
     <artifactId>carbone-sdk</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.4</version>
 </dependency>
 ```
 
@@ -363,7 +363,7 @@ mvn clean && mvn compile && mvn package
 ```
 Then you can create a local build of the SDK:
 ``` sh
-mvn install:install-file -Dfile=/path/to/carbone-sdk.jar -DgroupId=io.carbone -DartifactId=carbone-sdk -Dversion=2.0.3 -Dpackaging=jar
+mvn install:install-file -Dfile=/path/to/carbone-sdk.jar -DgroupId=io.carbone -DartifactId=carbone-sdk -Dversion=2.0.4 -Dpackaging=jar
 ```
 
 In another Java project, you can load the local build of the SDK, in the pom.xml:
@@ -371,7 +371,7 @@ In another Java project, you can load the local build of the SDK, in the pom.xml
 <dependency>
     <groupId>io.carbone</groupId>
     <artifactId>carbone-sdk</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.4</version>
 </dependency>
 ```
 Finally, compile your Java project with the SDK:
@@ -405,7 +405,7 @@ Publishing is handled automatically via GitHub Actions when a new GitHub Release
 2. Update `CHANGELOG.md` with the release notes
 3. Commit and push all changes to `master`
 4. Go to **GitHub → Releases → Create a new release**
-5. Set the tag to match the version (e.g. `v2.0.3`) and publish
+5. Set the tag to match the version (e.g. `v2.0.4`) and publish
 6. The [publish workflow](.github/workflows/publish.yml) triggers automatically and deploys to Maven Central
 
 The workflow builds the project, signs the artifacts with GPG, and uploads them to Maven Central using the `central-publishing-maven-plugin` with `autoPublish=true`.
