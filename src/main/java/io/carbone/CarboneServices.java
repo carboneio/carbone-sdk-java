@@ -53,6 +53,27 @@ class CarboneServices implements ICarboneServices {
         return p.isAbsolute();
     }
 
+    @Override
+    public String generateTemplateId(byte[] fileBytes) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        digest.update(fileBytes);
+        byte[] hashByte = digest.digest();
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hashByte) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append(0);
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
     public String generateTemplateId(String path) {
         try {
             File file = new File(path);
@@ -64,23 +85,7 @@ class CarboneServices implements ICarboneServices {
                 return null;
             }
             
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance("SHA-256");
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-                return null;
-            }
-            
-            digest.update(fileBytes);
-            byte[] hashByte = digest.digest();
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashByte) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append(0);
-                hexString.append(hex);
-            }
-            return hexString.toString();
+            return generateTemplateId(fileBytes);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
