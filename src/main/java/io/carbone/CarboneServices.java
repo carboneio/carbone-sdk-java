@@ -20,7 +20,7 @@ class CarboneServices implements ICarboneServices {
     int err;
     private final ICarboneTemplateClient carboneTemplateClient;
     private final ICarboneRenderClient carboneRenderClient;
-    private final ICarboneStatusClient carboneStatusClient ;
+    private final ICarboneStatusClient carboneStatusClient;
     String reportName;
 
     public CarboneServices(ICarboneTemplateClient carboneTemplateClient, ICarboneRenderClient carboneRenderClient, ICarboneStatusClient carboneStatusClient) {
@@ -43,7 +43,7 @@ class CarboneServices implements ICarboneServices {
     }
 
     @Override
-    public boolean deleteTemplate(String templateId) throws CarboneException { 
+    public boolean deleteTemplate(String templateId) throws CarboneException {
         CarboneResponse carboneResponse = carboneTemplateClient.deleteTemplate(templateId);
         return carboneResponse.isSuccess();
     }
@@ -63,7 +63,7 @@ class CarboneServices implements ICarboneServices {
                 e.printStackTrace();
                 return null;
             }
-            
+
             MessageDigest digest;
             try {
                 digest = MessageDigest.getInstance("SHA-256");
@@ -71,7 +71,7 @@ class CarboneServices implements ICarboneServices {
                 e.printStackTrace();
                 return null;
             }
-            
+
             digest.update(fileBytes);
             byte[] hashByte = digest.digest();
             StringBuilder hexString = new StringBuilder();
@@ -86,8 +86,8 @@ class CarboneServices implements ICarboneServices {
             return null;
         }
     }
-    public CarboneDocument render(String Json, String fileOrTemplateID) throws CarboneException
-    {
+
+    public CarboneDocument render(String Json, String fileOrTemplateID) throws CarboneException {
         if (fileOrTemplateID.isEmpty()) {
             throw new CarboneException("Carbone SDK render error: argument is missing: file_or_template_id");
         }
@@ -98,14 +98,12 @@ class CarboneServices implements ICarboneServices {
         File file = new File(fileOrTemplateID);
         if (!file.exists()) {
             resp = carboneRenderClient.renderReport(Json, fileOrTemplateID);
-        } 
-        else {
+        } else {
             try {
                 String templateId = generateTemplateId(fileOrTemplateID);
                 resp = carboneRenderClient.renderReport(Json, templateId);
             } catch (CarboneException e) {
-                if(e.getHttpStatus() == 404) 
-                {
+                if (e.getHttpStatus() == 404) {
                     try {
                         Path filePath = Paths.get(fileOrTemplateID);
                         CarboneResponse respAddTemplate = carboneTemplateClient.addTemplate(Files.readAllBytes(filePath));
@@ -117,8 +115,7 @@ class CarboneServices implements ICarboneServices {
                     } catch (IOException err) {
                         throw new CarboneException("Carbone SDK render error: failed to read template file");
                     }
-                }
-                else{
+                } else {
                     throw new CarboneException("Carbone SDK render error: failed to generate the template id");
                 }
             }
@@ -127,7 +124,7 @@ class CarboneServices implements ICarboneServices {
             throw new CarboneException("Carbone SDK render error: something went wrong");
         }
         if (!resp.isSuccess()) {
-            throw new CarboneException("Carbone SDK render error: render_id empty");
+            throw new CarboneException(String.format("Carbone SDK render error: %s", resp.getError()));
         }
         return getReport(resp.getData().getRenderId());
     }
@@ -135,8 +132,7 @@ class CarboneServices implements ICarboneServices {
 
     @Override
     public String renderReport(String renderData, String templateId) throws CarboneException {
-        if(checkPathIsAbsolute(templateId))
-        {
+        if (checkPathIsAbsolute(templateId)) {
             String newTemplateId = generateTemplateId(templateId);
             CarboneResponse carboneResponse = carboneRenderClient.renderReport(renderData, newTemplateId);
             return carboneResponse.getData().getRenderId();
@@ -150,18 +146,16 @@ class CarboneServices implements ICarboneServices {
     public CarboneDocument getReport(String renderId) throws CarboneException {
         CarboneDocument response = carboneRenderClient.getReport(renderId);
         return response;
-    } 
+    }
 
     @Override
-    public byte[] getTemplate(String templateId) throws CarboneException 
-    {
+    public byte[] getTemplate(String templateId) throws CarboneException {
         CarboneFileResponse response = carboneTemplateClient.getTemplate(templateId);
         return response.getFileContent();
     }
 
     @Override
-    public String getStatus() throws CarboneException 
-    {
+    public String getStatus() throws CarboneException {
         Response response = null;
         try {
             response = carboneStatusClient.getStatus();
