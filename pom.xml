@@ -179,7 +179,7 @@
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-okhttp</artifactId>
+            <artifactId>feign-java11</artifactId>
             <version>${feign.client.version}</version>
         </dependency>
         <dependency>

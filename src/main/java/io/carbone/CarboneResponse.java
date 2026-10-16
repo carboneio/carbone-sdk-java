@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
-class CarboneResponse {
+public class CarboneResponse {
 
     private final boolean success;
     private final String error;
@@ -18,7 +18,7 @@ class CarboneResponse {
 
     @Data
     @Builder
-    protected static class CarboneResponseData {
+    public static class CarboneResponseData {
         String templateId;
         String renderId;
     }

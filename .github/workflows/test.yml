@@ -1,0 +1,26 @@
+name: Tests
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: ['11', '17', '21', '25']
+    name: Java ${{ matrix.java-version }}
+    steps:
+      - uses: carboneio/checkout@main
+      - name: Set up Java
+        uses: carboneio/setup-java@main
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: maven
+      - name: Run tests
+        run: mvn --batch-mode clean test
