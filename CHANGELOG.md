@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. This projec
 
 ## 2.1.0
 - Security: replaced `feign-okhttp` with `feign-java11` (JDK `HttpClient`). This removes `okhttp`, `okio` and `kotlin-stdlib` from the dependency tree, which some scanners flagged for CVE-2020-29582 ([#11](https://github.com/carboneio/carbone-sdk-java/issues/11)).
+- Security: updated `jackson-databind` from `2.18.3` to `2.22.0` to fix multiple CVEs (including CVE-2026-54512, CVE-2026-54513, CVE-2026-68497, CVE-2026-91776 and CVE-2026-91777, High severity).
 - Security: Feign logging is now disabled (`NONE` instead of `FULL`). It previously logged the `Authorization` header (API token) and full request/response bodies when SLF4J was at DEBUG level.
 - `CarboneResponse` and `CarboneResponseData` are now public, so the API error code and message can be read via `CarboneException.getCarboneResponse()`.
 - CI: added a GitHub Actions workflow running the tests on Java 11, 17, 21 and 25.

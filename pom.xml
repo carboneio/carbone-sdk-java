@@ -31,7 +31,7 @@
     <properties>
         <maven.compiler.release>11</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jackson.version>2.18.3</jackson.version>
+        <jackson.version>2.22.0</jackson.version>
         <lombok.version>1.18.38</lombok.version>
         <feign.client.version>13.5</feign.client.version>
         <mockito.version>5.14.2</mockito.version>
