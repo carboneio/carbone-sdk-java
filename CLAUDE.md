@@ -61,4 +61,16 @@ src/
 
 ## Publishing
 
-Publishing to Maven Central is handled by `central-publishing-maven-plugin`. Artifacts are signed by `sign-maven-plugin`. Credentials are in `~/.m2/settings.xml`.
+Publishing to Maven Central runs in CI via `.github/workflows/publish.yml` (`mvn deploy` with `central-publishing-maven-plugin`, `autoPublish=true`; artifacts signed by `sign-maven-plugin`).
+
+Release steps:
+1. Bump `<version>` in `pom.xml` and add a `CHANGELOG.md` entry; merge to `master` once the Tests workflow passes (publish runs with `-DskipTests`).
+2. `gh release create vX.Y.Z --target master` (triggers the workflow), or `gh workflow run publish.yml --ref master`. A release runs the workflow file as it is at the tag.
+3. The job ends once Central has *validated* the bundle; the version appears on `repo1.maven.org` 10–30 min later.
+
+CI gotchas:
+- Secrets (`CENTRAL_USERNAME`/`CENTRAL_PASSWORD` = Central **user token**, `SIGN_KEY` = ASCII-armored private key, `SIGN_KEY_PASS`) live in the **`MAVEN CENTRAL` environment**, not repo secrets. The job must declare `environment: MAVEN CENTRAL`, otherwise they are empty → 401 on upload.
+- `sign-maven-plugin` reads the key from the `SIGN_KEY` env var, not from the gpg keyring set up by `setup-java`. If it is missing the plugin logs `Sign - key not found - skip execution` and Central rejects the unsigned bundle.
+- `central-publishing-maven-plugin` 0.5.0 bundled `maven-metadata-local.xml`/`_remote.repositories` with recent Maven → `content that does NOT have a .pom file` (fixed by 0.12.0). Keep it up to date.
+- To inspect the bundle locally without uploading: `mvn deploy -DskipTests -DskipUpload=true` (needs a `central` server entry in settings.xml, dummy values are fine), then `unzip -l target/central-publishing/central-bundle.zip`.
+- Actions are pinned by commit SHA (repo setting requires it); update the SHA and the `# vX.Y.Z` comment together.
