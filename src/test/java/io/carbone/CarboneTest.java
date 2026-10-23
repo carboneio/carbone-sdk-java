@@ -3,6 +3,8 @@ package io.carbone;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -482,5 +484,40 @@ public class CarboneTest {
         ICarboneServices carboneService = CarboneServicesFactory.CARBONE_SERVICES_FACTORY_INSTANCE.create("");
         String status = carboneService.getStatus();
         assertEquals(status.contains("\"success\":true,\"code\":200"), true);
+    }
+
+    @Test
+    public void Test_Render_Returns_Api_Error_Message_When_Not_Successful() throws CarboneException {
+        final String templateId = "fb9241ea2218ffd8f974110e539386384620244618c2efbf182b7bd47242987B";
+        final String json = "{ \"data\": {}, \"convertTo\": \"html\" }";
+        CarboneResponse mockedResponse = CarboneResponse.builder()
+                                                        .success(false)
+                                                        .error("With a test key, you can only convert in the following format (pdf)")
+                                                        .code("w115")
+                                                        .build();
+        when(carboneRender.renderReport(json, templateId)).thenReturn(mockedResponse);
+
+        CarboneException e = assertThrows(CarboneException.class, () -> carboneServices.render(json, templateId));
+
+        assertEquals("With a test key, you can only convert in the following format (pdf)", e.getMessage());
+        assertEquals("w115", e.getCarboneResponse().getCode());
+    }
+
+    @Test
+    public void Test_Render_From_Path_Propagates_Api_Error() throws CarboneException {
+        final String filename = directory + "/src/test/java/io/carbone/template3.odt";
+        final String json = "{ \"data\": {}, \"convertTo\": \"html\" }";
+        String templateId = carboneServices.generateTemplateId(filename);
+        CarboneResponse errorResponse = CarboneResponse.builder()
+                                                       .success(false)
+                                                       .error("With a test key, you can only convert in the following format (pdf)")
+                                                       .build();
+        CarboneException apiException = new CarboneException(errorResponse, 400);
+        when(carboneRender.renderReport(json, templateId)).thenThrow(apiException);
+
+        CarboneException e = assertThrows(CarboneException.class, () -> carboneServices.render(json, filename));
+
+        assertSame(apiException, e);
+        assertEquals(400, e.getHttpStatus());
     }
 }

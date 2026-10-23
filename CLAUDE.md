@@ -17,7 +17,7 @@ src/
   main/java/io/carbone/
     CarboneServicesFactory.java   # entry point / singleton factory (enum pattern)
     CarboneServices.java          # ICarboneServices implementation
-    CarboneFeignClientBuilder.java # shared Feign.builder() config (auth headers, OkHttp)
+    CarboneFeignClientBuilder.java # shared Feign.builder() config (auth headers, JDK HttpClient via feign-java11)
     CarboneDecoder.java           # custom Feign decoder (binary + JSON responses)
     CarboneErrorDecoder.java      # custom Feign error decoder (maps HTTP errors to CarboneException)
     ICarboneServices.java         # public API interface

@@ -119,7 +119,7 @@ class CarboneServices implements ICarboneServices {
                     }
                 }
                 else{
-                    throw new CarboneException("Carbone SDK render error: failed to generate the template id");
+                    throw e;
                 }
             }
         }
@@ -127,7 +127,10 @@ class CarboneServices implements ICarboneServices {
             throw new CarboneException("Carbone SDK render error: something went wrong");
         }
         if (!resp.isSuccess()) {
-            throw new CarboneException("Carbone SDK render error: render_id empty");
+            if (resp.getError() == null) {
+                throw new CarboneException("Carbone SDK render error: render failed without error message");
+            }
+            throw new CarboneException(resp, 200);
         }
         return getReport(resp.getData().getRenderId());
     }

@@ -1,9 +1,9 @@
 package io.carbone;
 
-import static feign.Logger.Level.FULL;
+import static feign.Logger.Level.NONE;
 
 import feign.Feign;
-import feign.okhttp.OkHttpClient;
+import feign.http2client.Http2Client;
 
 class CarboneFeignClientBuilder {
 
@@ -11,9 +11,9 @@ class CarboneFeignClientBuilder {
 
     static Feign.Builder createCarboneFeignClient(String token, String version) {
         return Feign.builder()
-            .client(new OkHttpClient())
+            .client(new Http2Client())
             .errorDecoder(new CarboneErrorDecoder())
-            .logLevel(FULL)
+            .logLevel(NONE)
             .requestInterceptor(template -> {
                 template.header("Authorization", "Bearer " + token);
                 template.header("carbone-version", version);
