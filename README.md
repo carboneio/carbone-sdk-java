@@ -8,7 +8,7 @@ The Carbone Java SDK provides a simple interface to communicate with Carbone Clo
 <dependency>
     <groupId>io.carbone</groupId>
     <artifactId>carbone-sdk</artifactId>
-    <version>2.0.4</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -50,7 +50,13 @@ if (report != null) {
     - [Generate and Download a Document](#generate-and-download-document)
     - [Generate a Document Only](#generate-document-only)
     - [Download a Document Only](#download-document-only)
+    - [Generate and Download in a Single Request](#generate-and-download-in-a-single-request)
+    - [Generate from a Template Sent with the Request](#generate-from-a-template-sent-with-the-request)
+    - [Generate with a Webhook](#generate-with-a-webhook)
     - [Add a Template](#add-template)
+    - [Add a Template with Versioning and Metadata](#add-template-with-versioning-and-metadata)
+    - [Update Template Metadata](#update-template-metadata)
+    - [List Templates](#list-templates)
     - [Delete a Template](#delete-template)
     - [Get a Template](#get-template)
     - [Set Carbone URL](#set-carbone-url)
@@ -202,6 +208,81 @@ if (render != null) {
 }
 ```
 
+### Generate and Download in a Single Request
+
+**Definition**
+
+```java
+public CarboneDocument renderAndDownload(String jsonData, String templateIdOrVersionId) throws CarboneException;
+public CarboneDocument renderAndDownload(String jsonData, String templateIdOrVersionId, CarboneRenderOptions options) throws CarboneException;
+```
+
+Generate a document from a Template ID or a Version ID and download it in the same request (`?download=true`). The document is not stored by Carbone, so no render ID is created. It returns a `CarboneDocument`, like [render](#generate-and-download-document).
+
+**Example**
+
+```java
+ICarboneServices carboneServices = CarboneServicesFactory.CARBONE_SERVICES_FACTORY_INSTANCE.create(System.getenv("CARBONE_TOKEN"));
+
+try {
+    CarboneDocument report = carboneServices.renderAndDownload(json, "YOUR_TEMPLATE_ID");
+    // report.getFileContent() and report.getName()
+} catch (CarboneException e) {
+    System.out.println("Error message: " + e.getMessage() + " Status code: " + e.getHttpStatus());
+}
+```
+
+### Generate from a Template Sent with the Request
+
+**Definition**
+
+```java
+public CarboneDocument renderInline(String jsonData, byte[] templateFile) throws CarboneException;
+public CarboneDocument renderInline(String jsonData, byte[] templateFile, CarboneRenderOptions options) throws CarboneException;
+```
+
+Send the template with the JSON data-set and download the generated document in a single request. Neither the template nor the document is stored by Carbone: useful for one-off or generated templates. `jsonData` must be a JSON object, the SDK adds the base64 template to it.
+
+**Example**
+
+```java
+try {
+    byte[] template = Files.readAllBytes(Paths.get("/path/to/template.docx"));
+    CarboneDocument report = carboneServices.renderInline(json, template);
+} catch (CarboneException | IOException e) {
+    // handle error
+}
+```
+
+### Generate with a Webhook
+
+**Definition**
+
+```java
+public String renderReport(String jsonData, String templateIdOrVersionId, CarboneRenderOptions options) throws CarboneException;
+```
+
+`CarboneRenderOptions` adds headers to a render request:
+* **webhookUrl**: generate the document asynchronously. The function returns `null` and Carbone sends the render ID to this URL once the document is generated, download it with [getReport](#download-document-only).
+* **webhookHeader(name, value)**: header added by Carbone to the webhook call, sent as `carbone-webhook-header-<name>`.
+* **header(name, value)**: any other request header, for instance `carbone-egress-header-authorization`.
+
+`renderAndDownload` and `renderInline` accept the same options.
+
+**Example**
+
+```java
+CarboneRenderOptions options = CarboneRenderOptions.builder()
+    .webhookUrl("https://your-server.com/carbone-webhook")
+    .webhookHeader("authorization", "Bearer YOUR_WEBHOOK_SECRET")
+    .build();
+try {
+    carboneServices.renderReport(json, "YOUR_TEMPLATE_ID", options);
+} catch (CarboneException e) {
+    System.out.println("Error message: " + e.getMessage() + " Status code: " + e.getHttpStatus());
+}
+```
+
 
 ### Add Template
 
@@ -246,6 +327,96 @@ try {
 }
 
 System.out.println(templateId);
+```
+
+### Add Template with Versioning and Metadata
+
+**Definition**
+
+```java
+public CarboneTemplate addTemplate(byte[] templateFile, CarboneTemplateOptions options) throws CarboneException;
+public CarboneTemplate addTemplate(String templatePath, CarboneTemplateOptions options) throws CarboneException, IOException;
+```
+
+Upload a template with the options of the [Carbone API v5](https://carbone.io/documentation/developer/http-api/manage-templates.html): `versioning`, `id`, `name`, `comment`, `category`, `tags`, `sample`, `deployedAt` and `expireAt`. Only the options you set are sent.
+
+With versioning, a template has two IDs:
+* **Template ID** (`getId()`): shared by all the versions of a template. Rendering with it uses the deployed version.
+* **Version ID** (`getVersionId()`): the SHA-256 of one specific version.
+
+Without versioning, the API returns the legacy `getTemplateId()` only.
+
+**Example**
+
+```java
+try {
+    // Create a new template
+    CarboneTemplate template = carboneServices.addTemplate("/path/to/invoice.docx", CarboneTemplateOptions.builder()
+        .versioning(true)
+        .name("Invoice")
+        .category("Billing")
+        .tags(Arrays.asList("invoice", "2026"))
+        .build());
+
+    // Add a new version to the same Template ID and deploy it now:
+    // rendering with template.getId() now uses this version
+    CarboneTemplate newVersion = carboneServices.addTemplate("/path/to/invoice-v2.docx", CarboneTemplateOptions.builder()
+        .versioning(true)
+        .id(template.getId())
+        .deployedAt(CarboneTemplateOptions.DEPLOY_NOW)
+        .build());
+} catch (CarboneException | IOException e) {
+    // handle error
+}
+```
+
+### Update Template Metadata
+
+**Definition**
+
+```java
+public CarboneTemplate updateTemplate(String templateIdOrVersionId, CarboneTemplateUpdate update) throws CarboneException;
+```
+
+Update `name`, `comment`, `category`, `tags`, `deployedAt`, `expireAt`, or move a version to another Template ID with `id`. A Template ID updates the deployed version, a Version ID updates that version.
+
+**Example**
+
+```java
+// Deploy a version now
+carboneServices.updateTemplate("VERSION_ID", CarboneTemplateUpdate.builder()
+    .deployedAt(Instant.now().getEpochSecond())
+    .build());
+```
+
+### List Templates
+
+**Definition**
+
+```java
+public CarboneTemplateList listTemplates() throws CarboneException;
+public CarboneTemplateList listTemplates(CarboneTemplateQuery query) throws CarboneException;
+public List<String> listTemplateCategories() throws CarboneException;
+public List<String> listTemplateTags() throws CarboneException;
+```
+
+List deployed templates, most recent first, filtered by `id`, `versionId`, `category`, `origin`, `search`, and `includeVersions` to list all the versions. Results are paginated: up to `limit` templates (100 by default) per page.
+
+**Example**
+
+```java
+CarboneTemplateQuery.CarboneTemplateQueryBuilder query = CarboneTemplateQuery.builder().category("Billing");
+CarboneTemplateList page = carboneServices.listTemplates(query.build());
+for (CarboneTemplate template : page.getTemplates()) {
+    System.out.println(template.getId() + " " + template.getName());
+}
+// Next page
+if (page.isHasMore()) {
+    page = carboneServices.listTemplates(query.cursor(page.getNextCursor()).build());
+}
+
+List<String> categories = carboneServices.listTemplateCategories();
+List<String> tags = carboneServices.listTemplateTags();
 ```
 
 ### Delete Template
@@ -348,11 +519,11 @@ System.out.println(status);
 
 ### Set API Version
 
-Specify the version of the Carbone CLoud API you want to request as second argument of the constructor.
-By default, all requested are made to the Carbone API version `4`.
+Specify the version of the Carbone Cloud API you want to request as second argument of the constructor.
+By default, all requests are made to the Carbone API version `5` (version `4` before SDK 3.0.0).
 
 ```java
-ICarboneServices carboneServices = CarboneServicesFactory.CARBONE_SERVICES_FACTORY_INSTANCE.create("CARBONE_API_TOKEN", "3");
+ICarboneServices carboneServices = CarboneServicesFactory.CARBONE_SERVICES_FACTORY_INSTANCE.create("CARBONE_API_TOKEN", "4");
 ```
 
 ## Build commands
@@ -363,7 +534,7 @@ mvn clean && mvn compile && mvn package
 ```
 Then you can create a local build of the SDK:
 ``` sh
-mvn install:install-file -Dfile=/path/to/carbone-sdk.jar -DgroupId=io.carbone -DartifactId=carbone-sdk -Dversion=2.0.4 -Dpackaging=jar
+mvn install:install-file -Dfile=/path/to/carbone-sdk.jar -DgroupId=io.carbone -DartifactId=carbone-sdk -Dversion=3.0.0 -Dpackaging=jar
 ```
 
 In another Java project, you can load the local build of the SDK, in the pom.xml:
@@ -371,7 +542,7 @@ In another Java project, you can load the local build of the SDK, in the pom.xml
 <dependency>
     <groupId>io.carbone</groupId>
     <artifactId>carbone-sdk</artifactId>
-    <version>2.0.4</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 Finally, compile your Java project with the SDK:

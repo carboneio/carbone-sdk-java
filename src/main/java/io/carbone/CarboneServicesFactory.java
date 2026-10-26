@@ -1,6 +1,5 @@
 package io.carbone;
 
-import feign.form.FormEncoder;
 import feign.gson.GsonEncoder;
 import feign.slf4j.Slf4jLogger;
 
@@ -18,7 +17,7 @@ public enum CarboneServicesFactory {
 
     public ICarboneServices create(String ... config) {
         String apiToken = System.getenv("CARBONE_TOKEN");
-        String apiVersion = "4";
+        String apiVersion = "5";
         if (config.length > 0 && !config[0].isEmpty()) {
             apiToken = config[0];
         }
@@ -27,10 +26,10 @@ public enum CarboneServicesFactory {
             apiVersion = config[1];
         }
         carboneTemplateClient = CarboneFeignClientBuilder.createCarboneFeignClient(apiToken, apiVersion)
-            .encoder(new FormEncoder())
+            .encoder(CarboneFormFieldWriter.formEncoder())
             .decoder(new CarboneDecoder())
             .logger(new Slf4jLogger(CarboneTemplateClient.class))
-            .target(CarboneTemplateClient.class, CARBONE_URL + "/template");
+            .target(CarboneTemplateClient.class, CARBONE_URL);
 
         carboneRenderClient = CarboneFeignClientBuilder.createCarboneFeignClient(apiToken, apiVersion)
             .encoder(new GsonEncoder())
