@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.0
+- Breaking: requests use the Carbone API version `5` by default (was `4`). Pass `"4"` as second argument of `create()` to keep the previous version.
+- Breaking (only if you implement them yourself): new methods on `ICarboneServices`, `ICarboneTemplateClient` and `ICarboneRenderClient`. The template client now targets the API root URL instead of `/template`.
+- Templates: `addTemplate(file, CarboneTemplateOptions)` uploads a template with versioning (`versioning`, `id`) and metadata (`name`, `comment`, `category`, `tags`, `sample`, `deployedAt`, `expireAt`), and returns a `CarboneTemplate` with the Template ID and Version ID.
+- Templates: `CarboneTemplateOptions.DEPLOY_NOW` deploys a version on upload. Adding a version to an existing Template ID needs a `deployedAt` different from the deployed version.
+- Templates: `updateTemplate()` updates template metadata (`PATCH /template/:id`).
+- Templates: `listTemplates()` lists templates with filters and cursor pagination, `listTemplateCategories()` and `listTemplateTags()` list categories and tags.
+- Render: `renderAndDownload()` generates and downloads a document in a single request (`?download=true`).
+- Render: `renderInline()` generates a document from a template sent with the request, without storing it.
+- Render: `CarboneRenderOptions` adds webhook (`carbone-webhook-url`, `carbone-webhook-header-*`) and custom headers to `renderReport()`, `renderAndDownload()` and `renderInline()`.
+
 ## 2.1.0
 - Security: replaced `feign-okhttp` with `feign-java11` (JDK `HttpClient`). This removes `okhttp`, `okio` and `kotlin-stdlib` from the dependency tree, which some scanners flagged for CVE-2020-29582 ([#11](https://github.com/carboneio/carbone-sdk-java/issues/11)).
 - Security: updated `jackson-databind` from `2.18.3` to `2.22.0` to fix multiple CVEs (including CVE-2026-54512, CVE-2026-54513, CVE-2026-68497, CVE-2026-91776 and CVE-2026-91777, High severity).

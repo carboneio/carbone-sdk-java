@@ -26,17 +26,30 @@ src/
     ICarboneStatusClient.java     # Feign interface for status endpoint
     CarboneDocument.java          # return type: byte[] content + String name (Lombok)
     CarboneFileResponse.java      # internal binary response wrapper (Lombok)
-    CarboneResponse.java          # JSON API response DTO (Lombok)
+    CarboneResponse.java          # JSON API response DTO for render/legacy template IDs (Lombok)
+    CarboneApiResponse.java       # generic JSON envelope for v5 endpoints (data, hasMore, nextCursor)
+    CarboneTemplate.java          # v5 template metadata (id, versionId, legacy templateId...)
+    CarboneTemplateOptions.java   # upload options (versioning, id, name, tags...)
+    CarboneTemplateUpdate.java    # PATCH /template body
+    CarboneTemplateQuery.java     # GET /templates filters
+    CarboneTemplateList.java      # one page of templates
+    CarboneRenderOptions.java     # per-request render headers (webhook, custom)
     CarboneException.java         # custom exception with HTTP status
   test/java/io/carbone/
-    CarboneTest.java              # main integration tests (23 tests, uses Mockito)
+    CarboneTest.java              # main tests (uses Mockito)
+    CarboneV5Test.java            # v5 service methods (Mockito)
+    CarboneHttpTest.java          # Feign wiring against a local JDK HttpServer (paths, headers, multipart order)
     CarboneDecoderTest.java       # CarboneDecoder unit tests
     CarboneErrorDecoderTest.java  # CarboneErrorDecoder unit tests
 ```
 
 ## Key Architecture
 
-- **OpenFeign 13.5** is used for all HTTP calls (3 separate Feign clients: template, render, status).
+- **OpenFeign 13.5** is used for all HTTP calls (3 separate Feign clients: template, render, status). The template and status clients target the API root URL, the render client targets `/render`.
+- **Carbone API v5** is the default (`carbone-version: 5`). Upload form fields must keep their order: `id` before `template`, `template` last — `addTemplate(Map<String, ?>)` relies on `LinkedHashMap` iteration order.
+- The API **ignores multipart text fields that have a `Content-Type` header** (silently: upload falls back to legacy mode). feign-form adds `text/plain` by default, so the template client uses `CarboneFormFieldWriter.formEncoder()`. Don't replace it with `new FormEncoder()`.
+- `CarboneLiveTest` runs against the real API only when `CARBONE_TOKEN` is set: `CARBONE_TOKEN=$(cat ~/.config/carbone/test-token) mvn test -Dtest=CarboneLiveTest`.
+- Javadoc runs on the sources before Lombok: `{@link}` to a Lombok-generated getter breaks `mvn package`, use `{@code}`.
 - **Template client** uses `FormEncoder` (multipart upload). **Render/Status clients** use `GsonEncoder`.
 - **CarboneDecoder** handles two response types: `CarboneFileResponse` (raw bytes) and `CarboneDocument` (bytes + filename from `content-disposition` header), falling back to `GsonDecoder` for JSON.
 - **Lombok** generates all constructors, getters, and builders on model classes. It must be declared as an `annotationProcessorPath` in the compiler plugin (required since Maven Compiler Plugin 3.13+).
